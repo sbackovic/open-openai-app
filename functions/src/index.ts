@@ -2,11 +2,33 @@ import {onRequest} from "firebase-functions/v2/https";
 import {defineSecret} from "firebase-functions/params";
 import {OpenAI} from "openai";
 import * as cors from "cors";
+import * as fs from "fs";
+import * as path from "path";
+
 import {TimeoutError, ValidationError} from "./errors";
 
 const openaiApiKey = defineSecret("OPENAI_API_KEY");
 
-const corsHandler = cors.default({origin: true}); // TODO -> replace
+const configPath = path.resolve(__dirname, "../config/config.json");
+const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+
+const isLocal = process.env.NODE_ENV === "development";
+let corsHandler;
+if (!isLocal) {
+  corsHandler = cors.default({
+    origin: (origin, callback) => {
+      if (config.cors.allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"), false);
+      }
+    },
+  });
+} else {
+  corsHandler = cors.default({
+    origin: true,
+  });
+}
 
 interface PromptRequest {
   prompt: string;

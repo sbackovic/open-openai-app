@@ -34,3 +34,5 @@ coverage
 
 # Ignore public folder (generated files)
 /public/
+
+.env

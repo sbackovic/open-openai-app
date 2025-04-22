@@ -1,0 +1,5 @@
+{
+  "cors": {
+    "allowedOrigins": ["https://open-openai-app.web.app", "https://open-openai-app.firebaseapp.com"]
+  }
+}
