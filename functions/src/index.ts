@@ -1,18 +1,29 @@
 import {onRequest} from "firebase-functions/v2/https";
 import {defineSecret} from "firebase-functions/params";
-import {OpenAI} from "openai";
+import {sendPrompt} from "./openai";
+import {FieldValue} from "firebase-admin/firestore";
+
 import * as cors from "cors";
 import * as fs from "fs";
 import * as path from "path";
+import * as admin from "firebase-admin";
 
 import {TimeoutError, ValidationError} from "./errors";
 
+admin.initializeApp();
+
+// init DB
+const db = admin.firestore();
+
+// define openAI key secret
 const openaiApiKey = defineSecret("OPENAI_API_KEY");
 
 const configPath = path.resolve(__dirname, "../config/config.json");
 const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 
 const isLocal = process.env.NODE_ENV === "development";
+
+// CORS setup
 let corsHandler;
 if (!isLocal) {
   corsHandler = cors.default({
@@ -54,7 +65,25 @@ export const validatePrompt = (prompt: string): string | null => {
   return null;
 };
 
-export const generateCompletion = onRequest({
+export const logToFirestore =
+  async (prompt: string, response: string | null, error: string | null) => {
+    try {
+      const logRef = db.collection("openai_logs").doc();
+
+      await logRef.set({
+        prompt,
+        response,
+        error,
+        timestamp: FieldValue.serverTimestamp(),
+      });
+
+      console.log("Prompt, response and error logged to Firestore.");
+    } catch (error) {
+      console.error("Error logging to Firestore:", error);
+    }
+  };
+
+export const askOpenAI = onRequest({
   secrets: [openaiApiKey],
   timeoutSeconds: 300,
   memory: "1GiB",
@@ -77,34 +106,14 @@ export const generateCompletion = onRequest({
 
       validatePrompt(prompt);
 
-      // default values - should be configurable
-      const model = "gpt-4o-mini";
-      const maxTokens = 1000;
-      const temperature = 0.7;
-      const systemMessage = "You are a helpful assistant.";
+      const openAiReply = await sendPrompt(prompt);
 
-      const openai = new OpenAI({
-        apiKey: openaiApiKey.value(),
-      });
-
-      // TODO - implement exponential backoff if necessary
-      const openaiResponse = await openai.chat.completions.create({
-        model,
-        messages: [
-          {role: "system", content: systemMessage},
-          {role: "user", content: prompt},
-        ],
-        max_tokens: maxTokens,
-        temperature,
-        response_format: {type: "text"},
-      });
-
-      const openAiResponseMessage = openaiResponse.choices[0]?.message?.content || "";
+      await logToFirestore(prompt, openAiReply, null);
 
       const result: PromptResponse = {
         success: true,
         data: {
-          text: openAiResponseMessage,
+          text: openAiReply,
         },
       };
 
@@ -117,15 +126,18 @@ export const generateCompletion = onRequest({
           success: false,
           error: error.message,
         });
+
+        await logToFirestore(request.body.prompt, null, error.message);
       } else {
         const statusCode = (error as { status: number }).status || 500;
-        // const errorMessage = (error as { message: string }).message || "Internal Server Error";
+        const errorMessage = (error as { message: string }).message || "Internal Server Error";
         const userErrorMessage = "Unable to process your request at the moment.";
-
         response.status(statusCode).json({
           success: false,
           error: userErrorMessage,
         });
+
+        await logToFirestore(request.body.prompt, null, errorMessage);
       }
     }
   });
@@ -133,9 +145,6 @@ export const generateCompletion = onRequest({
 ;
 
 // TODO
-//  - auth on cloud function
-//  - add rate limiting
-//  - retry - exponential backoff
 //  - testing
 //  - make OpenAI parameters configurable
 //  - update docs

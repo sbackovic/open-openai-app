@@ -45,7 +45,8 @@
         <button class="send-button" @click="sendMessage" :disabled="isLoading || !userInput.trim()">
           <svg class="send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 20L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M18 10L12 4L6 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18 10L12 4L6 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
@@ -54,9 +55,9 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue';
+import {ref, watch, nextTick} from 'vue';
 
-const CLOUD_FUNCTION_URL = 'https://us-central1-open-openai-app.cloudfunctions.net/generateCompletion';
+const CLOUD_FUNCTION_URL = 'https://us-central1-open-openai-app.cloudfunctions.net/askOpenAI';
 
 const userInput = ref('');
 const messages = ref([]);
@@ -66,7 +67,7 @@ const chatContentRef = ref(null);
 // Watch for changes in messages array and scroll down
 watch(messages, () => {
   scrollToBottom();
-}, { deep: true });
+}, {deep: true});
 
 const sendMessage = async () => {
   if (userInput.value.trim() && !isLoading.value) {
@@ -104,37 +105,20 @@ const sendMessage = async () => {
 };
 
 const callCloudFunction = async (prompt) => {
-
-  // simulation call
-  await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
-
   const response = await fetch(CLOUD_FUNCTION_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ prompt })
+    body: JSON.stringify({prompt})
   });
 
   return await response.json();
 };
 
-// Simulated responses
-const getSimulatedResponse = (prompt) => {
-  const responses = [
-    `Thanks for the question! “${prompt}” is an interesting one. I’d say it really depends on the context and the specific details you’re looking for.`,
-    `That’s a great question. When considering “${prompt},” it’s important to take into account several factors that can influence the answer.`,
-    `Based on the information available, “${prompt}” can be analyzed from different perspectives. Allow me to explain some key aspects.`,
-    `I understand your interest in “${prompt}.” This topic requires careful analysis and consideration of various factors.`,
-    `Your question about “${prompt}” opens up an interesting discussion. There are multiple approaches to this topic that we can explore.`
-  ];
-
-  return responses[Math.floor(Math.random() * responses.length)];
-};
-
 // Function to scroll the chat content to the bottom
 const scrollToBottom = async () => {
-  await nextTick(); // Wait for DOM update
+  await nextTick();
   if (chatContentRef.value) {
     chatContentRef.value.scrollTop = chatContentRef.value.scrollHeight;
   }
@@ -143,7 +127,6 @@ const scrollToBottom = async () => {
 </script>
 
 <style scoped>
-/* Basic Reset */
 * {
   margin: 0;
   padding: 0;
@@ -154,46 +137,41 @@ const scrollToBottom = async () => {
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Full viewport height */
-  width: 100%; /* Full viewport width */
+  height: 100vh;
+  width: 100%;
   background-color: #ffffff;
-  overflow: hidden; /* Prevent body scroll */
-  border: 1px solid #e0e0e0; /* Subtle border */
-  border-radius: 8px; /* Rounded corners for the main container */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Soft shadow */
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* Header */
 .header {
-  padding: 15px 20px; /* Adjusted padding */
+  padding: 15px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-bottom: 1px solid #e0e0e0; /* Consistent border */
+  border-bottom: 1px solid #e0e0e0;
   flex-shrink: 0;
   background-color: #fafafa;
 }
 
-/* Logo Styling Placeholder */
 .logo {
   position: relative;
-  width: 80px; /* Adjusted size */
+  width: 80px;
   height: 40px;
   display: flex;
   align-items: center;
-  /* Replace with your actual SVG or image logo */
 }
 
-/* Main chat content area */
 .chat-content {
-  flex-grow: 1; /* Takes remaining space */
-  overflow-y: auto; /* Enables vertical scrolling */
+  flex-grow: 1;
+  overflow-y: auto;
   padding: 20px;
   background-color: #ffffff;
-  scroll-behavior: smooth; /* Smooth scrolling */
+  scroll-behavior: smooth;
 }
 
-/* Empty state styling */
 .empty-state {
   display: flex;
   height: 100%;
@@ -205,66 +183,60 @@ const scrollToBottom = async () => {
   font-size: 0.95em;
 }
 
-/* Container for all messages */
 .messages-container {
   display: flex;
   flex-direction: column;
-  gap: 12px; /* Space between messages */
+  gap: 12px;
 }
 
-/* Individual message wrapper */
 .message {
-  display: flex; /* Use flex for alignment */
-  max-width: 80%; /* Limit message width */
+  display: flex;
+  max-width: 80%;
 }
-
 .user-message {
-  justify-content: flex-end; /* Align user messages to the right */
+  justify-content: flex-end;
   align-self: flex-end;
 }
 
 .assistant-message {
-  justify-content: flex-start; /* Align assistant messages to the left */
+  justify-content: flex-start;
   align-self: flex-start;
-  /* Dodato za loading indicator poravnanje*/
   max-width: fit-content;
 }
-/* Oblačić poruke */
+
 .message-bubble {
-  padding: 12px 18px; /* Comfortable padding */
-  border-radius: 20px; /* Modern rounded corners */
-  max-width: 100%; /* Ensure bubble doesn't exceed message wrapper */
+  padding: 12px 18px;
+  border-radius: 20px;
+  max-width: 100%;
 }
 
 .user-message .message-bubble {
-  background-color: #007bff; /* Example user color */
+  background-color: #007bff;
   color: white;
-  border-bottom-right-radius: 5px; /* Slightly sharper corner */
+  border-bottom-right-radius: 5px;
 }
 
 .assistant-message .message-bubble {
-  background-color: #f0f0f0; /* Example assistant color */
+  background-color: #f0f0f0;
   color: #333;
-  border-bottom-left-radius: 5px; /* Slightly sharper corner */
+  border-bottom-left-radius: 5px;
 }
 
-/* Sadržaj unutar oblačića */
 .message-content {
-  line-height: 1.5; /* Improved readability */
-  white-space: pre-wrap; /* Preserve line breaks and wrap text */
-  overflow-wrap: break-word; /* Break long words to prevent overflow */
-  word-wrap: break-word; /* Fallback for older browsers */
-  max-width: 100%; /* Ensure content stays within bubble */
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  max-width: 100%;
 }
 
-/* --- DODAT CSS SAMO ZA LOADING INDIKATOR --- */
 .message-content.loading {
-  min-width: 50px; /* Give space for dots */
-  min-height: 21px; /* Roughly match line-height */
+  min-width: 50px;
+  min-height: 21px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0; /* Adjust padding if needed for alignment */
+  padding: 0;
 }
 
 .dot-typing {
@@ -272,10 +244,8 @@ const scrollToBottom = async () => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #888; /* Darker dots for visibility */
-  color: #888; /* Set color for potential use */
-  /* Animation using 3 pseudo elements or box-shadow trick */
-  /* Using the simpler pseudo-element way here */
+  background-color: #888;
+  color: #888;
   animation: dot-typing-jump 1.4s infinite ease-in-out;
 }
 
@@ -308,17 +278,14 @@ const scrollToBottom = async () => {
     opacity: 0.6;
   }
   40% {
-    transform: translateY(-6px); /* Make dots jump */
+    transform: translateY(-6px);
     opacity: 1;
   }
 }
-/* --- KRAJ DODATOG CSS-a ZA LOADING INDIKATOR --- */
 
-
-/* Input container footer */
 .input-container {
-  padding: 15px 20px; /* Adjusted padding */
-  border-top: 1px solid #e0e0e0; /* Consistent border */
+  padding: 15px 20px;
+  border-top: 1px solid #e0e0e0;
   flex-shrink: 0;
   background-color: #fafafa;
 }
@@ -327,9 +294,9 @@ const scrollToBottom = async () => {
   display: flex;
   align-items: center;
   background-color: #ffffff;
-  border: 1px solid #dcdcdc; /* Slightly softer border */
-  border-radius: 25px; /* Rounded input wrapper */
-  padding: 5px 10px; /* Padding inside wrapper */
+  border: 1px solid #dcdcdc;
+  border-radius: 25px;
+  padding: 5px 10px;
   position: relative;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -344,8 +311,8 @@ const scrollToBottom = async () => {
   flex-grow: 1;
   border: none;
   background: transparent;
-  padding: 12px 15px; /* Input padding */
-  font-size: 1rem; /* Standard font size */
+  padding: 12px 15px;
+  font-size: 1rem;
   outline: none;
   color: #333;
 }
@@ -360,18 +327,18 @@ const scrollToBottom = async () => {
 }
 
 .send-button {
-  width: 38px; /* Slightly smaller */
+  width: 38px;
   height: 38px;
   border-radius: 50%;
-  background-color: #007bff; /* Button background */
+  background-color: #007bff;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin-left: 5px; /* Space between input and button */
+  margin-left: 5px;
   transition: background-color 0.2s ease, opacity 0.2s ease;
-  color: white; /* Icon color */
+  color: white;
 }
 
 .send-button:hover:not(:disabled) {
@@ -379,7 +346,7 @@ const scrollToBottom = async () => {
 }
 
 .send-button:disabled {
-  background-color: #a0c7e4; /* Disabled color */
+  background-color: #a0c7e4;
   opacity: 0.7;
   cursor: not-allowed;
 }
@@ -391,7 +358,6 @@ const scrollToBottom = async () => {
 
 /* Responsive Adjustments */
 /* Keep full width on mobile */
-
 /* Adjust layout slightly for tablets and smaller desktops */
 @media (min-width: 768px) {
   .message {
@@ -399,14 +365,14 @@ const scrollToBottom = async () => {
   }
 
   .input-wrapper {
-    max-width: 90%; /* Limit input width */
-    margin: 0 auto; /* Center input */
+    max-width: 90%;
+    margin: 0 auto;
   }
 
   .chat-container {
-    max-width: 1000px; /* Max container width */
-    margin: 10px auto; /* Add some margin */
-    height: calc(100vh - 20px); /* Adjust height for margin */
+    max-width: 1000px;
+    margin: 10px auto;
+    height: calc(100vh - 20px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   }
 }
@@ -426,7 +392,7 @@ const scrollToBottom = async () => {
   }
 
   .chat-container {
-    max-width: 1200px; /* Wider max width */
+    max-width: 1200px;
     margin: 20px auto;
     height: calc(100vh - 40px);
   }
