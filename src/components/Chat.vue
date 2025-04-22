@@ -56,9 +56,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue';
 
-// Replace with your actual Cloud Function URL
-const CLOUD_FUNCTION_URL = 'YOUR_CLOUD_FUNCTION_URL_HERE';
-// Example: 'https://us-central1-your-project-id.cloudfunctions.net/generateCompletion';
+const CLOUD_FUNCTION_URL = 'https://us-central1-open-openai-app.cloudfunctions.net/generateCompletion';
 
 const userInput = ref('');
 const messages = ref([]);
@@ -110,26 +108,18 @@ const callCloudFunction = async (prompt) => {
   // simulation call
   await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
 
-  // Simulirani odgovor
-  // const response = await fetch(CLOUD_FUNCTION_URL, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({ prompt })
-  // });
-  // return await response.json();
+  const response = await fetch(CLOUD_FUNCTION_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ prompt })
+  });
 
-  //  simulated response
-  return {
-    success: true,
-    data: {
-      text: getSimulatedResponse(prompt),
-    }
-  };
+  return await response.json();
 };
 
-// Simulate responses
+// Simulated responses
 const getSimulatedResponse = (prompt) => {
   const responses = [
     `Thanks for the question! “${prompt}” is an interesting one. I’d say it really depends on the context and the specific details you’re looking for.`,

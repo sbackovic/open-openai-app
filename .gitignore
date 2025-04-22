@@ -28,3 +28,9 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Firebase specific folders
+.firebase/
+
+# Ignore public folder (generated files)
+/public/
