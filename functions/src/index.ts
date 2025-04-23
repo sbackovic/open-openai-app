@@ -77,7 +77,7 @@ export const logToFirestore =
         timestamp: FieldValue.serverTimestamp(),
       });
 
-      console.log("Prompt, response and error logged to Firestore.");
+      console.log("Request logged to Firestore.");
     } catch (error) {
       console.error("Error logging to Firestore:", error);
     }
@@ -143,8 +143,3 @@ export const askOpenAI = onRequest({
   });
 })
 ;
-
-// TODO
-//  - testing
-//  - make OpenAI parameters configurable
-//  - update docs
