@@ -103,7 +103,6 @@ export const askOpenAI = onRequest({
       }
 
       const {prompt} = request.body as PromptRequest;
-
       validatePrompt(prompt);
 
       const openAiReply = await sendPrompt(prompt);
